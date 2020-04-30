@@ -28,18 +28,18 @@ def find_specific_color(frame):
 
     # hsv色空間に変換
     hsv = cv2.cvtColor(frame,cv2.COLOR_BGR2HSV_FULL)
-    cv2.imwrite('tmp2.png', hsv )
+    #cv2.imwrite('tmp2.png', hsv )
 
     # 色を抽出する
     ex_img = cv2.inRange(hsv,LOW_COLOR,HIGH_COLOR)
-    cv2.imwrite('tmp3.png', ex_img )
+    #cv2.imwrite('tmp3.png', ex_img )
 
     # 輪郭抽出
     _,contours,hierarchy = cv2.findContours(ex_img,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
     
     # 面積を計算
     areas = np.array(list(map(cv2.contourArea, contours)))
-    print(len(areas) )
+    #print(len(areas) )
     if len(areas) == 0 or np.max(areas) / (height*width) < AREA_RATIO_THRESHOLD:
         # 見つからなかったらNoneを返す
         #print("the area is too small")
