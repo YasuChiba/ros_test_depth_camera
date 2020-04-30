@@ -26,5 +26,5 @@
     <arg name="debug" value="$(arg debug)"/>
   </include>
   <node name="urdf_spawner" pkg="gazebo_ros" type="spawn_model" respawn="false" output="screen"
-        args="-urdf -model robot -param robot_description -x 8.0 -y -7.0 -Y 1.57"/>
+        args="-urdf -model robot -param robot_description"/>
 </launch>

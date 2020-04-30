@@ -24,3 +24,17 @@ def convert_depth_to_phys_coord(x,z,X0,Y0,Z0,theta0_x,theta0_z,d, horizontal_FOV
     theta_z = theta0_z - theta_dash_z
     Z = Z0 + d*math.sin(theta_z)
     return X, Y, Z
+
+
+def convert_depth_to_phys_coord_from_pointcloud(x, z, pcl):
+  point_index = u * pcl.point_step + v * pcl.row_step
+  point_idx_x = point_index + pcl.fields[0].offset
+  point_idx_y = point_index + pcl.fields[1].offset
+  point_idx_z = point_index + pcl.fields[2].offset
+
+  x = pcl.data[point_idx_x]
+  y = pcl.data[point_idx_y]
+  z = pcl.data[point_idx_z]
+
+  return x,y,z
+  

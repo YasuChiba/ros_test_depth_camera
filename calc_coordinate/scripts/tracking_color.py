@@ -4,8 +4,10 @@
 import os
 import rospy
 from sensor_msgs.msg import Image
-from geometry_msgs.msg import PointStamped, Twist, Vector3, Pose, Point
+from geometry_msgs.msg import PointStamped, Twist, Vector3, Pose, Point, Quaternion
 from visualization_msgs.msg import Marker
+from gazebo_msgs.msg import ModelState, ModelStates
+
 import cv2
 from cv_bridge import CvBridge
 import numpy as np
@@ -62,6 +64,7 @@ class CalcCoordNode:
 
     self.pub_position_marker = rospy.Publisher("position_marker", Marker, queue_size=10)
     self.pub_detected_position_image = rospy.Publisher("/detected_position_image", Image, queue_size=1)
+    self.pub_position_gazebo_marker = rospy.Publisher("/gazebo/set_model_state", ModelState, queue_size=10)
 
 
     r = rospy.Rate(5)
@@ -90,6 +93,29 @@ class CalcCoordNode:
     else:
       return
 
+    marker_data = createMarker()
+    marker_data.id = 1
+    X,Y,Z = convert_depth_to_phys_coord(position[0],position[1],0,0,0,0, math.pi/2.0,self.depth_array[position[1]][position[0]],85.2,69.18)
+    p = PointStamped()
+    p.header.frame_id = "d435_link"
+    p.header.stamp =rospy.Time(0)
+    p.point.x= -Y
+    p.point.y = -X
+    p.point.z = -Z
+    p = self.tf_listener.transformPoint("base_link",p)
+    marker_data.pose.position = p.point
+    self.pub_position_marker.publish(marker_data)
+
+
+
+    #point = self.tf_listener.transformPoint("base_link",p)
+    orientation = Quaternion(0, 0, 0, 0)
+    pose = Pose(p.point,orientation)
+    ms = ModelState()
+    ms.pose = pose
+    ms.model_name = "obje_2"
+    ms.reference_frame = "world"
+    self.pub_position_gazebo_marker.publish(ms)
 
     
 
