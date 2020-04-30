@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import math
-
+import pyrealsense2
 
 def convert_depth_to_phys_coord(x,z,X0,Y0,Z0,theta0_x,theta0_z,d, horizontal_FOV, vertical_FOV):
     d_theta_x =  horizontal_FOV/360.0*math.pi*2 #カメラ画角（水平方向）
@@ -25,16 +25,28 @@ def convert_depth_to_phys_coord(x,z,X0,Y0,Z0,theta0_x,theta0_z,d, horizontal_FOV
     Z = Z0 + d*math.sin(theta_z)
     return X, Y, Z
 
+#x→右方向  y→下方向　のピクセル int
+#depth (meter)   float
+#cameraInfo: sensor_msgs/CameraInfo
+def convert_depth_to_phys_coord_using_realsense(x, y, depth, cameraInfo):
 
-def convert_depth_to_phys_coord_from_pointcloud(x, z, pcl):
-  point_index = u * pcl.point_step + v * pcl.row_step
-  point_idx_x = point_index + pcl.fields[0].offset
-  point_idx_y = point_index + pcl.fields[1].offset
-  point_idx_z = point_index + pcl.fields[2].offset
+  _intrinsics = pyrealsense2.intrinsics()
+  _intrinsics.width = cameraInfo.width
+  _intrinsics.height = cameraInfo.height
+  _intrinsics.ppx = cameraInfo.K[2]
+  _intrinsics.ppy = cameraInfo.K[5]
+  _intrinsics.fx = cameraInfo.K[0]
+  _intrinsics.fy = cameraInfo.K[4]
+  #_intrinsics.model = cameraInfo.distortion_model
+  _intrinsics.model  = pyrealsense2.distortion.none 	
 
-  x = pcl.data[point_idx_x]
-  y = pcl.data[point_idx_y]
-  z = pcl.data[point_idx_z]
+  _intrinsics.coeffs = [i for i in cameraInfo.D]
 
-  return x,y,z
-  
+  result = pyrealsense2.rs2_deproject_pixel_to_point(_intrinsics, [x, y], depth)
+  #print(result)
+
+  #result[0]: right
+  #result[1]: down
+  #result[2]: forward
+  return result[2], -result[0], -result[1]
+
